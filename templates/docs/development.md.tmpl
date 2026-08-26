@@ -1,0 +1,49 @@
+<!-- ai-dev-workflow:managed v1 -->
+# Development Workflow
+
+One workflow, two gears. The gear is chosen by change size and risk — never by habit.
+
+## Choosing the gear
+
+**Quick gear** — small, local, trivially reversible: bug fixes, typos, config tweaks, small refactors, dependency patch bumps. ≤3 files, no public API / data model / infra changes.
+
+**Full gear** — everything else: features, architecture, major refactors, infrastructure. When in doubt, full gear.
+
+## Quick gear
+
+```
+ORIENT   → read AGENTS.md + git status
+CHANGE   → smallest correct change, stay in scope
+VERIFY   → run the verification below
+COMMIT   → one atomic conventional commit; agent drafts, human approves
+```
+
+## Full gear
+
+```
+ORIENT   → AGENTS.md, relevant docs, git-truth check (verify branch/merge state with git, not prose)
+SPEC     → docs/specs/<feature>.md: goal, non-goals, acceptance criteria, ≥2 approaches + trade-offs — human approves the approach
+PLAN     → ordered tasks inside the spec: files touched, per-task verification, risks
+BUILD    → one task at a time, one atomic commit per task, stay in scope
+PROVE    → verification green → self-review vs every acceptance criterion
+RECORD   → ADR in docs/decisions/ only for durable, hard-to-reverse decisions
+GATE     → human approval before merge/deploy/scope change/anything irreversible
+```
+
+## Verification contract
+
+Definition of done = deterministic checks green, never the agent's say-so.
+
+Order: **format → lint → typecheck → unit tests → integration tests → build → e2e** — run only what exists in this repo.
+
+{{VERIFICATION_COMMANDS}}
+
+AI review (architecture, requirement coverage, edge cases) is advisory and layered on top of green checks — never a substitute. For high-risk changes, an optional adversarial review checks correctness and stated-requirement gaps only — not style.
+
+## Git conventions
+
+- Conventional commits: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:` with optional scope.
+- Atomic commits: one logical change each.
+- Full-gear work on a short-lived `feat/<slug>` or `fix/<slug>` branch.
+- Agents never commit/push without explicit approval.
+{{GIT_CONVENTIONS_EXTRA}}

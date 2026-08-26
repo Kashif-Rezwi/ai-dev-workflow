@@ -1,0 +1,52 @@
+<!-- ai-dev-workflow:managed v1 -->
+# AGENTS.md
+
+> Canonical instructions for AI coding agents in this repository, following the open [agents.md](https://agents.md) convention. This is the only agent-instruction file — harness-specific files are thin pointers to it. Keep it accurate and small; it is the first thing an agent reads.
+
+## What this project is
+
+{{PROJECT_DESCRIPTION}}
+
+## Stack & layout
+
+{{STACK_SUMMARY}}
+
+| Path | Purpose |
+|---|---|
+{{LAYOUT_TABLE_ROWS}}
+
+## Commands
+
+| Task | Command |
+|---|---|
+{{COMMAND_TABLE_ROWS}}
+
+Package manager: **{{PACKAGE_MANAGER}}** — use it for all installs and scripts.
+
+## Verification — the definition of done
+
+{{VERIFICATION_SECTION}}
+
+Never declare a change "done" on reasoning alone — the checks above must be green. AI review judges architecture and requirement coverage; deterministic tools judge correctness.
+
+## Boundaries
+
+- Stay in task scope; no drive-by refactors or unrelated "cleanups".
+- No new dependencies without justification and approval.
+- Never commit or push without explicit approval; draft the message, the human decides.
+- Never modify CI, deployment config, secrets, or environment files without explicit approval.
+- Match the style of the file being edited; preserve working behavior.
+{{EXTRA_BOUNDARIES}}
+
+## Documentation map (load just-in-time)
+
+| Document | Subject |
+|---|---|
+| `docs/development.md` | Development workflow: two gears, verification contract, git conventions |
+| `docs/architecture.md` | System shape and module responsibilities |
+| `docs/specs/` | Feature specifications — the source of truth for work in progress |
+| `docs/decisions/` | Architecture decision records (created on first durable decision) |
+
+## Working on changes
+
+Follow the two-gear workflow in `docs/development.md`: quick gear for small reversible changes, full gear (spec → plan → build → prove → gate) for features and architecture. When in doubt, full gear.
