@@ -24,6 +24,8 @@ Check in priority order:
 
 Read runtime pins such as `.nvmrc`, `.node-version`, toolchain files, and manifest engines. Resolve conflicting evidence using repo docs and CI; do not choose a package manager or runtime version merely because it appears in this skill's examples.
 
+For monorepos or repositories using several languages, inspect each affected area's instructions and tooling. Record the working directory, runtime/environment, and package manager or task runner for each command. Do not apply the root package manager or verification gate to every subproject unless the repo establishes that contract.
+
 ## Language & framework signals
 
 | Signal file(s) | Conclusion |

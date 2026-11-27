@@ -14,7 +14,7 @@ How to adapt the AGENTS.md template. Keep shared instructions small, factual, an
 
 1. **Project identity** — one or two sentences: what it is, what it does.
 2. **Stack & layout** — detected languages/frameworks; a small path→purpose table.
-3. **Commands** — install, dev, build, test, lint, typecheck, verify. Only real ones.
+3. **Commands** — install, dev, build, test, lint, typecheck, verify. Only real ones, with their working directory and relevant environment. Keep distinct subproject tooling and verification contracts explicit.
 4. **Verification** — the established contract, area-specific checks, and evidence needed to assess completion.
 5. **Boundaries** — what agents must not do (see below).
 6. **Doc map** — where deeper context lives, loaded just-in-time.

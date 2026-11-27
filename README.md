@@ -68,8 +68,9 @@ The skill inspects the repo, states a concise plan, then performs the authorized
 
 ## Development
 
+- The source release version lives in `SKILL.md` under `metadata.version`; it does not version or automatically refresh generated repository files.
 - `./validate.sh` — lightweight static checks: frontmatter structure, required string fields with a YAML runtime, name syntax/length and matching folder name, description length, and recognized skill-path references. It also checks that reference/checklist files are mentioned by another Markdown file; this is not a proof of full reachability or behavior.
-- YAML parsing uses an available Python+PyYAML or Ruby runtime; without one, the validator warns and uses limited single-line heuristics. It does not install dependencies or establish complete Agent Skills compliance.
+- YAML parsing uses an available Python+PyYAML or Ruby runtime, accepting LF or CRLF frontmatter; without one, the validator warns and uses limited single-line name/description heuristics confined to the frontmatter. It does not install dependencies or establish complete Agent Skills compliance.
 - The validator does not evaluate generated repo behavior, preservation, repeated initialization, requirement coverage, or live harness loading. Validate changes with temporary valid/invalid metadata fixtures and representative minimal, configured, and customized repos. Inspect actual artifacts, preserved content, repeated-run diffs, and check execution; matching headings/wording is insufficient. Report static/scenario checks separately from any live agent/harness evaluation.
 - Repo layout: `SKILL.md` (entry point) plus `references/`, `templates/`, `checklists/`.
 

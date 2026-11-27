@@ -2,18 +2,16 @@
 # Lightweight static checks for this single-skill repo.
 #
 # Layers (execution order):
-#   1. Structure: frontmatter opens on line 1 and is closed.
-#   2. Plain-scalar heuristic (always): an unquoted value containing ': ' is
-#      invalid YAML; ' #' silently truncates the value. Quoted or block-scalar
-#      values are left to the real parser.
-#   3. Real YAML parsing when a runtime is available (python3+PyYAML, else ruby)
+#   1. Structure: frontmatter opens on line 1 and is closed (LF or CRLF).
+#   2. Real YAML parsing when a runtime is available (python3+PyYAML, else ruby),
 #      plus required string fields and basic name/description constraints.
+#   3. Without a YAML runtime, limited single-line name/description heuristics.
 #   4. Reference hints: recognized skill paths must exist; reference/checklist
 #      files must be mentioned by another Markdown file. This is not a graph
 #      reachability check, a behavior test, or proof of harness loading.
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 DIR="$REPO_ROOT"
 file="$DIR/SKILL.md"
 name="$(basename "$REPO_ROOT")"
@@ -60,7 +58,7 @@ PY
   elif [ "$YAML_ENGINE" = ruby ]; then
     ruby -e '
 require "yaml"
-lines = File.read(ARGV[0]).split("\n")
+lines = File.read(ARGV[0]).split(/\r?\n/)
 close = lines[1..-1].index("---")
 abort "frontmatter not closed" if close.nil?
 begin
@@ -80,7 +78,12 @@ puts value
   fi
 }
 
-# check_plain_scalars <file> — heuristic guard for unquoted ': ' and ' #'.
+# Read frontmatter only, normalizing CRLF for the shell fallback.
+frontmatter_lines() {
+  awk '{sub(/\r$/, "")} NR==1{next} $0=="---"{exit} {print}' "$1"
+}
+
+# Conservative fallback guard; a real YAML parser takes precedence.
 check_plain_scalars() {
   local key value
   while IFS= read -r line; do
@@ -96,7 +99,7 @@ check_plain_scalars() {
         say_fail "'$key' is a plain YAML scalar containing ' #' — YAML treats it as a comment and truncates the value; wrap it in double quotes"
         ;;
     esac
-  done < <(awk 'NR==1 && $0=="---"{next} /^---$/{exit} {print}' "$1" | grep -E '^[A-Za-z0-9_-]+:[[:space:]]*[^[:space:]]')
+  done < <(frontmatter_lines "$1" | grep -E '^(name|description):[[:space:]]*[^[:space:]]')
 }
 
 # orphan_check <sub> <fail|warn> — files in <sub>/<subdirs> must be referenced.
@@ -128,17 +131,18 @@ if [ ! -f "$file" ]; then
   exit 1
 fi
 
-# 1. Frontmatter structure: starts on line 1 and is closed.
-head -1 "$file" | grep -q '^---$' || say_fail "frontmatter must start on line 1"
-if [ "$(grep -c '^---$' "$file")" -lt 2 ]; then
+# 1. Frontmatter structure: starts on line 1 and is closed (LF or CRLF).
+first_line="$(head -1 "$file")"
+if [ "${first_line%$'\r'}" != '---' ]; then
+  say_fail "frontmatter must start on line 1"
+  exit 1
+fi
+if ! awk '{sub(/\r$/, "")} NR>1 && $0=="---"{found=1; exit} END{exit !found}' "$file"; then
   say_fail "frontmatter must be closed by a second '---'"
   exit 1
 fi
 
-# 2. Plain-scalar heuristic (also protects the fallback path below).
-check_plain_scalars "$file"
-
-# 3. YAML validity + required fields.
+# 2–3. YAML validity + required fields, or explicitly limited fallback.
 fm_name=""
 fm_desc=""
 if [ "$YAML_ENGINE" != none ]; then
@@ -152,8 +156,9 @@ if [ "$YAML_ENGINE" != none ]; then
   fi
 else
   say_warn "no YAML runtime found (install python3+PyYAML or ruby) — heuristic frontmatter checks only"
-  fm_name="$(sed -n 's/^name:[[:space:]]*//p' "$file" | head -1)"
-  fm_desc="$(sed -n 's/^description:[[:space:]]*//p' "$file" | head -1)"
+  check_plain_scalars "$file"
+  fm_name="$(frontmatter_lines "$file" | sed -n 's/^name:[[:space:]]*//p' | head -1)"
+  fm_desc="$(frontmatter_lines "$file" | sed -n 's/^description:[[:space:]]*//p' | head -1)"
   if [ -z "$fm_name" ]; then say_fail "missing 'name' field"; exit 1; fi
   if [ -z "$fm_desc" ]; then say_fail "missing 'description' field"; exit 1; fi
   case "$fm_name" in
