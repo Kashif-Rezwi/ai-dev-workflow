@@ -68,6 +68,7 @@ The skill inspects the repo, states a concise plan, then performs the authorized
 
 ## Development
 
+- [Roadmap](docs/roadmap.md) — planned work, linked specs, and where to resume.
 - The source release version lives in `SKILL.md` under `metadata.version`; it does not version or automatically refresh generated repository files.
 - `./validate.sh` — lightweight static checks: frontmatter structure, required string fields with a YAML runtime, name syntax/length and matching folder name, description length, and recognized skill-path references. It also checks that reference/checklist files are mentioned by another Markdown file; this is not a proof of full reachability or behavior.
 - YAML parsing uses an available Python+PyYAML or Ruby runtime, accepting LF or CRLF frontmatter; without one, the validator warns and uses limited single-line name/description heuristics confined to the frontmatter. It does not install dependencies or establish complete Agent Skills compliance.
