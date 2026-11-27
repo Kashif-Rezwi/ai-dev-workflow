@@ -28,17 +28,17 @@ For a global installation targeting all supported agents:
 npx skills add Kashif-Rezwi/ai-dev-workflow -g -a '*' -y
 ```
 
-For a repeatable trial of **1.1.0**, pin the skill's source commit. This example
+For a repeatable trial of **1.1.1**, pin the skill's release tag. This example
 targets Codex globally; select the agent you actually use:
 
 ```bash
-npx skills add Kashif-Rezwi/ai-dev-workflow@f48d74589a3c52c600b5fd156f540163e0f73d32 --skill ai-dev-workflow --global --agent codex
+npx skills add Kashif-Rezwi/ai-dev-workflow@v1.1.1 --skill ai-dev-workflow --global --agent codex
 ```
 
 The unpinned examples follow the repository's default branch at installation time.
-A source commit identifies the selected contents; `metadata.version` identifies
-the declared release. The pinned example is a known release, not an automatic
-request for the newest revision.
+A release tag selects a named revision; a full source commit pins it independently
+of later tag changes. `metadata.version` identifies the declared release. The
+pinned example selects 1.1.1 rather than automatically following new releases.
 
 Review the CLI's output for the installed locations and selected agents. See the [official CLI reference](https://github.com/vercel-labs/skills/blob/main/docs/commands.md) for current flags and update behavior. The separate [skills catalog](https://github.com/Kashif-Rezwi/skills) lists skills; this repository is the source for `ai-dev-workflow`.
 
@@ -55,19 +55,27 @@ Check the harness's current skill-discovery documentation for its supported loca
 ## Verify the install
 
 ```bash
-npx skills ls -g                 # lists ai-dev-workflow
+# Run from the repository you want to set up:
+npx skills ls                    # project installations
+npx skills ls -g                 # global installations
 ```
+
+Check both scopes: a project copy and a global copy can coexist under the same
+skill name. Compare their installed paths and versions. For a controlled trial
+with different copies, specify the intended installed `SKILL.md` path in your
+agent request and require it to confirm that path and version before changes.
+A global listing alone does not identify which copy the agent will use.
 
 Open `SKILL.md` at the **installed location reported by the CLI**, rather than
 reading a source checkout. Check `metadata.version`; the pinned trial above should
-show `1.1.0`. For the shared-store Unix installation, that file is
+show `1.1.1`. For the shared-store Unix installation, that file is
 `~/.agents/skills/ai-dev-workflow/SKILL.md`.
 
 For a CLI-managed global installation, inspect the `ai-dev-workflow` entry in
 `~/.agents/.skill-lock.json` when present. Check its source and recorded commit
-against the revision selected above. Metadata and bookkeeping do not detect every
-manual edit; a stronger integrity check compares the installed file set and bytes
-with that commit, including references, templates, and checklists.
+against the commit resolved from the tag above. Metadata and bookkeeping do not
+detect every manual edit; a stronger integrity check compares the installed file
+set and bytes with that commit, including references, templates, and checklists.
 
 The CLI listing checks a CLI-managed installation, not actual harness loading or a manual copy. Start a fresh session and confirm the harness can discover/use `ai-dev-workflow` through its supported skill interface.
 

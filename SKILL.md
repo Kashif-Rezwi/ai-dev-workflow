@@ -2,7 +2,7 @@
 name: ai-dev-workflow
 description: "Establish or improve a portable AI-assisted repository workflow with shared instructions, proportionate planning, verification, and cross-session handoffs. Use to initialize, inspect, or audit a repo's AI workflow or instruction files, or to create a feature spec. Modes: init, inspect, doctor, spec, verify. Not for everyday coding or debugging failing checks."
 metadata:
-  version: "1.1.0"
+  version: "1.1.1"
 ---
 
 # AI Development Workflow
