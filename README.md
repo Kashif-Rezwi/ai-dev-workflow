@@ -28,17 +28,17 @@ For a global installation targeting all supported agents:
 npx skills add Kashif-Rezwi/ai-dev-workflow -g -a '*' -y
 ```
 
-For a repeatable trial of **1.1.1**, pin the skill's release tag. This example
+For a repeatable trial of **1.1.2**, pin the skill's release tag. This example
 targets Codex globally; select the agent you actually use:
 
 ```bash
-npx skills add Kashif-Rezwi/ai-dev-workflow@v1.1.1 --skill ai-dev-workflow --global --agent codex
+npx skills add Kashif-Rezwi/ai-dev-workflow@v1.1.2 --skill ai-dev-workflow --global --agent codex
 ```
 
 The unpinned examples follow the repository's default branch at installation time.
 A release tag selects a named revision; a full source commit pins it independently
 of later tag changes. `metadata.version` identifies the declared release. The
-pinned example selects 1.1.1 rather than automatically following new releases.
+pinned example selects 1.1.2 rather than automatically following new releases.
 
 Review the CLI's output for the installed locations and selected agents. See the [official CLI reference](https://github.com/vercel-labs/skills/blob/main/docs/commands.md) for current flags and update behavior. The separate [skills catalog](https://github.com/Kashif-Rezwi/skills) lists skills; this repository is the source for `ai-dev-workflow`.
 
@@ -68,7 +68,7 @@ A global listing alone does not identify which copy the agent will use.
 
 Open `SKILL.md` at the **installed location reported by the CLI**, rather than
 reading a source checkout. Check `metadata.version`; the pinned trial above should
-show `1.1.1`. For the shared-store Unix installation, that file is
+show `1.1.2`. For the shared-store Unix installation, that file is
 `~/.agents/skills/ai-dev-workflow/SKILL.md`.
 
 For a CLI-managed global installation, inspect the `ai-dev-workflow` entry in
