@@ -2,8 +2,8 @@
 
 For small, reversible changes (quick gear).
 
-- [ ] Read `AGENTS.md` and checked `git status` (branch, uncommitted work)
-- [ ] Change is the smallest correct one; nothing unrelated touched
-- [ ] No new dependencies
-- [ ] Verification green (the repo's checks, all existing layers)
-- [ ] One atomic commit, conventional message drafted for human approval
+- [ ] Intended behavior, affected area, compatibility, and reversibility are understood
+- [ ] Read applicable instructions; checked branch, commit, and working tree
+- [ ] Made the smallest correct change within the authorized scope
+- [ ] Completed the shared review in `checklists/pre-merge-review.md`
+- [ ] If unfinished work crosses sessions, transferred a conversational checkpoint using `references/workflow.md`

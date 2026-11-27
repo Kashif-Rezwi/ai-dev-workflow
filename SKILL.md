@@ -1,6 +1,8 @@
 ---
 name: ai-dev-workflow
-description: "Bootstrap or audit a pragmatic AI-assisted development workflow in any software repository: generates AGENTS.md, a two-gear development workflow, spec and ADR templates, a verification contract, and thin harness adapters. Use when the user asks to initialize, set up, inspect, audit, or improve a repo's AI/agent development workflow, AGENTS.md, or AI instruction files, or to scaffold a feature spec with this workflow. Subcommands: init, inspect, doctor, spec, verify. Not for everyday coding tasks, bug fixes, or debugging failing tests, builds, or CI."
+description: "Establish or improve a portable AI-assisted repository workflow with shared instructions, proportionate planning, verification, and cross-session handoffs. Use to initialize, inspect, or audit a repo's AI workflow or instruction files, or to create a feature spec. Modes: init, inspect, doctor, spec, verify. Not for everyday coding or debugging failing checks."
+metadata:
+  version: "1.1.0"
 ---
 
 # AI Development Workflow
@@ -9,24 +11,24 @@ Bootstrap a pragmatic, harness-agnostic AI development workflow into any reposit
 
 ## Core principles (apply to every command)
 
-1. **Preserve, never fight.** Existing tooling, docs, scripts, CI, and AI configuration are the user's prior intent. Detect → analyze → preserve → extend → warn → ask. Never blindly overwrite.
-2. **Single source of truth.** `AGENTS.md` is the canonical agent-instruction file. Harness-specific files are one-line pointers, never duplicated content.
-3. **Deterministic verification is the definition of done.** An agent never declares work "done" on reasoning alone — the repo's checks must be green.
-4. **Two gears, not bureaucracy.** Small changes use the quick loop; features/architecture use the full loop. See `references/workflow.md`.
-5. **Minimum files.** Generate only what will be read. No empty directories, no placeholder docs, no process for its own sake.
-6. **Idempotent.** Re-running `init` on an initialized repo reports "already AI-ready" and changes nothing.
+1. **Preserve and extend.** Inspect existing tooling, docs, scripts, CI, and AI configuration. Preserve useful content; address confirmed gaps with focused patches, not regeneration.
+2. **Shared instructions.** Use `AGENTS.md` for shared project rules and thin adapters where needed. Preserve existing scoped or harness-specific guidance; link detailed procedures in their current documents.
+3. **Evidence and review.** Follow the repository's verification contract and check acceptance criteria. Passing automated checks is evidence, not proof of every requirement or of harness instruction loading.
+4. **Two gears, not bureaucracy.** Choose planning depth by scope, risk, compatibility, and reversibility. See `references/workflow.md` for the loops and handoff format.
+5. **Minimum files.** Reuse existing guidance. Create a document only when it serves a concrete need. The repository workflow must work without this skill installed.
+6. **Stable repeated runs.** Detect afresh; avoid duplicated sections, settings entries, and unnecessary changes. A coherent setup needs no edits just because templates changed.
 
 ## Commands
 
-The user's request determines the command. When ambiguous, ask.
+Infer the command from the request and context. Ask only when missing information changes the action.
 
 | Command | Trigger examples | What it does |
 |---|---|---|
 | `init` | "initialize", "set up", "bootstrap", "make this repo AI-ready" | Inspect → plan → generate baseline → validate → report |
 | `inspect` | "inspect", "analyze", "what's the workflow here" | Read-only report of stack, tooling, AI config, gaps |
 | `doctor` | "doctor", "check", "audit", "what's missing/stale" | Detect missing/stale/contradictory config; propose fixes, change nothing |
-| `spec <feature>` | "create a spec for X", "spec out X" | Scaffold `docs/specs/<feature>.md` from template |
-| `verify` | "verify", "run the checks" | Discover and run the repo's deterministic checks in order |
+| `spec <feature>` | "create a spec for X", "spec out X" | Create a concrete spec in the repo's planning location |
+| `verify` | "verify", "run the checks" | Discover and run the repo's appropriate checks |
 
 ## Procedure: `init`
 
@@ -40,39 +42,40 @@ Present a concise detection report to the user.
 
 ### 2. PLAN
 
-Decide the action for every candidate file using `references/merge-rules.md` (load it now). The matrix is: **CREATE** (absent) / **REFRESH** (skill-managed, human-unmodified) / **PRESERVE + report** (human-owned) / **WARN** (contradicts detected reality).
+Decide the action for each candidate using `references/merge-rules.md` (load it now): **CREATE** (missing guidance with a purpose) / **NO-OP** (need already covered) / **PATCH** (focused, authorized improvement) / **PRESERVE** / **WARN** (contradicts detected facts). A managed marker does not establish whether a human or a template changed the content.
 
-If the repo already has a good `AGENTS.md` and coherent AI setup: report **"already AI-ready"**, list any `doctor`-style observations, and stop. That is a successful run.
+If existing instructions and docs cover the workflow, verification, and handoffs coherently: report **"already AI-ready"**, list any observations, and stop. Different filenames or formatting are not gaps.
 
-Present the plan as a table (file → action → reason) and **ask for confirmation before writing anything**, unless the user already approved generation.
+Present a concise plan (file → action → reason), then carry out the authorized work. Carry existing approvals forward. Ask only for essential missing information or material decisions beyond that scope; do not add a routine confirmation gate.
 
 ### 3. GENERATE
 
-Load `references/instructions-guide.md` and the relevant templates from `templates/`. Fill every `{{SLOT}}` with detected facts — never leave generic filler.
+Load `references/instructions-guide.md` and only the templates needed. Adapt their structure to the repo; resolve every `{{SLOT}}` and remove unsupported sections or rows. Do not invent commands, architecture, or links to paths that do not exist.
 
-Mandatory baseline (create if absent):
-- `AGENTS.md` — from `templates/AGENTS.md.tmpl`, filled with detected stack/commands
-- `docs/development.md` — from `templates/docs/development.md.tmpl` (the two-gear workflow + verification contract, so the repo works without this skill installed)
-- `docs/architecture.md` — from `templates/docs/architecture.md.tmpl`, seeded with detected structure
+Baseline guidance (reuse first):
+- Shared project instructions: extend existing instructions or create `AGENTS.md` from `templates/AGENTS.md.tmpl`.
+- Development workflow, verification, and handoffs: extend the existing development/contribution guide, or create `docs/development.md` from `templates/docs/development.md.tmpl`. Include enough procedure to work without skill references.
 
 Conditional:
-- `docs/specs/feature-spec.md` — always create the template file so specs are one step away
-- `docs/decisions/` — do **not** create at init; on the first real decision, create `docs/decisions/NNNN-<slug>.md` from `templates/docs/decisions/adr.md.tmpl`
-- CI workflow — from `templates/ci/github-actions.yml.tmpl`, **only if** no CI exists and a GitHub remote is present; otherwise note it in the report
-- Harness adapters — load `references/harness-adapters.md`; generate thin pointers **only** for harnesses the user confirms they use or that are already present in the repo
-- `verify` script — if a package manager exists, **propose** composing existing scripts into one `verify` script and ask before editing the manifest. For non-JS repos, document the equivalent command sequence in `docs/development.md` instead.
+- Architecture guidance: reuse existing design docs; use `templates/docs/architecture.md.tmpl` only if the detected system needs a separate map. A minimal repo does not need filler architecture.
+- Feature template: reuse the repo's planning format. Adapt `templates/docs/specs/feature-spec.md.tmpl` only when substantial work needs one; do not create a specs directory for a hypothetical future task.
+- ADR: use `templates/docs/decisions/adr.md.tmpl` in the repo's decision-record location only for a real durable decision. Do not create an empty directory.
+- CI workflow: `templates/ci/github-actions.yml.tmpl` is optional, only when GitHub-hosted, CI is absent, and CI creation is explicitly authorized. Detect runtime/setup conventions; do not add CI as a baseline requirement.
+- Harness adapters: load `references/harness-adapters.md` only for harnesses in use. Add an adapter only if needed, preserving existing settings and instructions.
+- Combined verification command: prefer an existing contract. If a new command would help, propose its exact composition after inspecting script dependencies and lifecycle hooks. Edit manifests only within the authorized scope; a documented sequence is sufficient in any stack.
 
-Never generate: duplicated `.cursor/rules`, nested `AGENTS.md` in small repos, `.ai/`/`.agent/` directory trees, status/evidence docs, or tooling the repo doesn't have (recommend it in the report instead).
+Avoid duplicated `.cursor/rules`, unnecessary nested instructions, `.ai/`/`.agent/` tracking trees, status/evidence docs, and unrequested tooling. Preserve useful existing structure rather than replacing it.
 
 ### 4. VALIDATE
 
-- Re-read every file you created: all `{{SLOTS}}` filled, no contradictions with detection.
-- If a `verify` command exists or was created, run it. Report the result honestly — if it fails on pre-existing issues, say so and do not fix unrelated failures without asking.
+- Re-read changed files for unresolved slots, missing references, contradictions, duplicated rules, and preserved content.
+- Select checks using the `verify` procedure below. For instruction/config changes, check syntax, paths, imports, and discovery configuration; application tests do not establish that a harness loaded guidance. Confirm loading in a fresh real session when available; otherwise report it as unperformed.
+- Review the resulting diff and evaluate a repeated `init` against the resulting files: does any concrete gap remain? Avoid writes when nothing needs changing. Separate failures introduced here from unrelated failures.
 - `git status --short` — show exactly what changed.
 
 ### 5. REPORT
 
-Close with: what was detected, what was created/preserved/warned, what needs the user's attention, and the suggested next step (usually: commit, then start the first feature with `spec`).
+Close with what was detected, changed or preserved, validation evidence and limits, and any remaining work. Implementation completion does not require a Git action. Include a handoff checkpoint if work remains unfinished.
 
 ## Procedure: `inspect`
 
@@ -82,34 +85,34 @@ Load `references/detection.md`, run detection, and present the report. Also list
 
 Run `inspect`, then check for problems:
 - `AGENTS.md` contradictions (wrong commands, wrong package manager, dead file paths)
-- missing verification path (no way to run checks in one step)
+- missing or contradictory verification guidance (a documented sequence is sufficient)
 - duplicated/conflicting instruction files (`CLAUDE.md` copy-pasted from `AGENTS.md`, etc.)
-- stale docs vs git reality (docs claim work lives on a branch that was merged)
+- stale docs vs Git state, broken references, missing handoff guidance, or adapters inconsistent with the harness version/settings
 
-Propose a numbered fix list. Change nothing without explicit approval.
+Report evidence and focused proposed fixes. `doctor` is read-only unless the user also authorizes repairs; that authorization need not be requested again.
 
 ## Procedure: `spec <feature>`
 
-1. Slugify the feature name (`<feature>` → `kebab-case`).
-2. Interview the user first: goal, non-goals, acceptance criteria, constraints. Then draft **at least two approaches with a trade-off table** and recommend one. The spec is not complete until the user approves the approach.
-3. If `docs/specs/` has no template, copy `templates/docs/specs/feature-spec.md.tmpl` there.
-4. Only now create `docs/specs/<slug>.md` from the template, filled with the approved results — every `{{SLOT}}` resolved, no half-filled file on disk.
-5. Remind the user: the spec is the source of truth for implementation; the full gear in `docs/development.md` applies.
+1. Read the relevant docs and existing planning format. Use its location; otherwise use `docs/specs/<slug>.md` with a kebab-case feature name. Preserve existing specs.
+2. Derive goal, non-goals, acceptance criteria, and constraints from the request and available context. Ask only for missing information that matters. Compare alternatives when there is a meaningful design decision; record already approved choices without reopening them.
+3. Adapt the repo's template or `templates/docs/specs/feature-spec.md.tmpl`. Write concrete requirements, ordered tasks with affected files/checks, and realistic risks. Resolve slots and remove unused sections; no extra template copy is required.
+4. Link the actual development guide if one exists. Include the handoff checkpoint when work will cross sessions. A request for a spec does not itself authorize implementation or Git actions.
 
 ## Procedure: `verify`
 
-1. Discover available checks from the repo's manifests/config (see `references/detection.md` §verification-discovery).
-2. Run what exists, in this order, stopping at the first failure: **format check → lint → typecheck → unit tests → integration tests → build → e2e**.
-3. Report each layer as pass/fail/skipped-not-present. Never claim success for a layer that didn't run.
+1. Load `references/detection.md` and follow its verification-discovery guidance: identify the changed area, established contract, script dependencies, and lifecycle hooks before selecting commands.
+2. Prefer the repository's established `verify`/`check` command or documented sequence, including its order and required full gates. Use area-specific checks where the contract permits. Do not separately rerun builds, tests, or typechecks already covered by the selected command. If no contract exists, order supported checks by their actual dependencies.
+3. Run the selected checks. Stop dependent checks on failure; run independent checks if they add useful evidence. Do not weaken checks or fix unrelated failures to obtain a pass.
+4. Report exact commands/results, manual review performed, and actual instruction-loading confirmation separately. Identify checks absent, skipped with a reason, blocked, or unperformed. Map evidence to acceptance criteria; green checks alone do not establish completion.
 
 ## Working on changes (any command)
 
-When implementing or modifying code in a repo that uses this workflow, follow the two-gear loop in `references/workflow.md`: quick gear for small changes, full gear for features/architecture. Gear rule: touching >3 files, public API, data model, or infra — or not trivially reversible — means full gear. Close quick-gear work against `checklists/quick-change.md`; track full-gear work with `checklists/full-change.md`, and complete `checklists/pre-merge-review.md` before requesting merge approval.
+When modifying a repo's workflow, follow `references/workflow.md`. Choose the gear by scope, risk, compatibility, and reversibility, not a file count or the user's phrasing. Use `checklists/quick-change.md` or `checklists/full-change.md` as appropriate; both share the final review in `checklists/pre-merge-review.md`. Keep unfinished-work checkpoints in an active spec, or transfer them conversationally for small tasks. Notes do not transfer uncommitted code.
 
 ## Boundaries
 
-- Never overwrite human-owned files (see `references/merge-rules.md`).
+- Preserve existing content; apply focused patches within scope (see `references/merge-rules.md`).
 - Never install dependencies, add tooling, or change CI without explicit approval.
-- Never commit or push without explicit approval; draft the message, let the human decide.
+- Respect established branch and commit conventions. Stage, commit, push, merge, publish, or deploy only when explicitly authorized; do not make them part of implementation completion.
 - Stay in scope: no drive-by refactors, no unsolicited "cleanups".
 - If the repo has its own `AGENTS.md` rules, they outrank this skill's defaults.

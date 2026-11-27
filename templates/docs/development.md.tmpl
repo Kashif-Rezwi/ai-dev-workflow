@@ -1,49 +1,73 @@
-<!-- ai-dev-workflow:managed v1 -->
 # Development Workflow
 
-One workflow, two gears. The gear is chosen by change size and risk — never by habit.
+Follow Plan → Implement → Review. Choose planning depth by scope, risk, compatibility, and reversibility. Read shared project instructions and only the docs relevant to the task.
 
 ## Choosing the gear
 
-**Quick gear** — small, local, trivially reversible: bug fixes, typos, config tweaks, small refactors, dependency patch bumps. ≤3 files, no public API / data model / infra changes.
+**Quick gear** — clear, local changes with low compatibility risk and straightforward rollback, such as copy corrections and contained fixes/refactors with understood effects.
 
-**Full gear** — everything else: features, architecture, major refactors, infrastructure. When in doubt, full gear.
+**Full gear** — substantial behavior/design changes, compatibility decisions, migrations, or broad effects with difficult rollback. File count and phrases such as "just fix it" do not determine risk.
 
 ## Quick gear
 
 ```
-ORIENT   → read AGENTS.md + git status
+ORIENT   → read project instructions; inspect branch, commit, and working tree
+PLAN     → state the intended change briefly; ask only for essential missing information
 CHANGE   → smallest correct change, stay in scope
-VERIFY   → run the verification below
-COMMIT   → one atomic conventional commit; agent drafts, human approves
+VERIFY   → appropriate checks using the repository's verification contract
+REVIEW   → assess the result and diff; report evidence and limits
 ```
+
+No separate planning file is needed for a clear, reversible task. Preserve unrelated work.
 
 ## Full gear
 
 ```
-ORIENT   → AGENTS.md, relevant docs, git-truth check (verify branch/merge state with git, not prose)
-SPEC     → docs/specs/<feature>.md: goal, non-goals, acceptance criteria, ≥2 approaches + trade-offs — human approves the approach
+ORIENT   → project instructions, relevant docs, actual Git state
+SPEC     → goal, non-goals, observable acceptance criteria, and constraints in the repo's planning format
 PLAN     → ordered tasks inside the spec: files touched, per-task verification, risks
-BUILD    → one task at a time, one atomic commit per task, stay in scope
-PROVE    → verification green → self-review vs every acceptance criterion
-RECORD   → ADR in docs/decisions/ only for durable, hard-to-reverse decisions
-GATE     → human approval before merge/deploy/scope change/anything irreversible
+BUILD    → manageable steps within the approved scope; update the spec as findings change it
+VERIFY   → checks and manual review mapped to every acceptance criterion
+REVIEW   → regressions, complexity, compatibility, scope, and documentation
+REPORT   → outcomes, evidence, limits, and a handoff if work remains
 ```
+
+{{PLANNING_GUIDANCE}}
+
+Compare alternatives when there is a meaningful decision. Use available requirements and approvals; ask only for missing information or material choices beyond the approved scope. Update existing architecture/design docs when the system changes. Record a separate ADR only when a durable decision needs one; do not create empty tracking directories or continuous activity logs.
 
 ## Verification contract
 
-Definition of done = deterministic checks green, never the agent's say-so.
-
-Order: **format → lint → typecheck → unit tests → integration tests → build → e2e** — run only what exists in this repo.
+Prefer this repository's established command/sequence and order. Inspect script dependencies and lifecycle hooks before composing checks. Avoid separate builds, tests, or typechecks already covered by the selected command. Respect required full gates; use area-specific checks where the contract permits.
 
 {{VERIFICATION_COMMANDS}}
 
-AI review (architecture, requirement coverage, edge cases) is advisory and layered on top of green checks — never a substitute. For high-risk changes, an optional adversarial review checks correctness and stated-requirement gaps only — not style.
+Instructions/docs/adapters need factual, path, syntax, and import checks; application tests do not establish that a harness loaded instructions. Confirm discovery in a fresh real session when available. Changes to visual or interactive behavior need appropriate browser/manual review.
+
+Report exact automated commands/results, manual review, and actual harness loading confirmation separately, including unperformed checks. Passing checks provide evidence; also assess every acceptance criterion. Stop dependent checks on failure, do not weaken checks, and report unrelated failures separately. Repeat passing checks only after relevant changes or to resolve a concrete concern.
+
+## Continuing in another session, editor, or harness
+
+Read shared project instructions, the relevant guide, and the active task record. Verify the actual branch, commit, and working tree before trusting an earlier checkpoint. Supply relevant files explicitly to a tool without checkout access.
+
+At a real handoff, update the active spec; for a small task, copy this into the next conversation instead of creating another tracking file:
+
+```text
+Goal and acceptance criteria:
+Branch and base commit:
+Modified files and uncommitted work:
+Decisions already made:
+Checks run and results:
+Remaining work or blockers:
+Next concrete action:
+```
+
+Include relevant constraints and approvals with decisions. Record exact checks and the state they covered. Update at a handoff, not after every edit.
+
+A checkpoint does not transfer uncommitted code. For another checkout or machine, transfer the actual changes through a maintainer-controlled patch or authorized Git action. Confirm the changes are available before continuing. Keep durable guidance in project docs rather than copying it into editor-specific memory.
 
 ## Git conventions
 
-- Conventional commits: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:` with optional scope.
-- Atomic commits: one logical change each.
-- Full-gear work on a short-lived `feat/<slug>` or `fix/<slug>` branch.
-- Agents never commit/push without explicit approval.
-{{GIT_CONVENTIONS_EXTRA}}
+{{GIT_CONVENTIONS}}
+
+Follow the repository's branch, worktree, and commit conventions. Stage, commit, push, merge, publish, or deploy only when explicitly authorized; carry that authorization forward within its scope. Implementation and review can be complete without any Git action.

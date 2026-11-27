@@ -1,56 +1,51 @@
-# Merge Rules — Safety & Idempotency
+# Merge Rules — Preservation & Repeated Runs
 
-Every file decision during `init`/`doctor` follows this matrix. These rules are absolute; they are what make the skill safe to run against real repositories.
+Use these rules during `init` and authorized repairs after `doctor`. Read the existing content before proposing a change, including files carrying a managed marker.
 
 ## The action matrix
 
 | Situation | Action | Behavior |
 |---|---|---|
-| File absent | **CREATE** | Generate from template, filled with detected facts |
-| File exists, has the managed marker, content matches what the skill would generate | **NO-OP** | Report as up to date |
-| File exists, has the managed marker, skill template evolved | **REFRESH** | Regenerate; show a diff summary first |
-| File exists, has the managed marker, but human modified it | **PRESERVE + report** | The human's edits win. Show what a refresh would change; ask |
-| File exists, no managed marker | **PRESERVE + report** | Human-owned. Never modify without explicit approval |
-| File exists and contradicts detected reality | **WARN** | Flag in the report with evidence; propose a fix; change nothing |
+| Guidance absent and useful now | **CREATE** | Adapt the relevant template using detected facts |
+| Existing content already serves the need | **NO-OP** | Keep it, even if it differs from the current template |
+| Confirmed gap with an authorized remedy | **PATCH** | Apply the smallest useful diff; retain surrounding content |
+| Existing content outside scope or of uncertain intent | **PRESERVE** | Report only relevant gaps or questions |
+| Content contradicts detected facts | **WARN** | Cite evidence; propose a focused patch, applying it only within authorization |
 
 ## The managed marker
 
-Skill-generated files carry one HTML comment on the first line:
+Older generated files may carry this HTML comment:
 
 ```
 <!-- ai-dev-workflow:managed v1 -->
 ```
 
-- Presence = "the skill may refresh this file".
-- If the human edits the file, the marker stays but the content differs → PRESERVE (treat as adopted by the human).
-- If the human deletes the marker, the file is human-owned forever.
-- Never add the marker to a file the skill didn't create.
+The marker records provenance only. It cannot distinguish a human edit from a changed generator template, and grants no permission to regenerate. Do not infer ownership from its presence or absence. New files need no marker; leave existing markers alone unless their removal is part of the requested work. No hashes, state database, or ownership registry are needed.
 
 ## Special files
 
 | File | Rule |
 |---|---|
-| `AGENTS.md` (existing, no marker) | Human-owned. If it's good → report "already AI-ready" and stop. If it has gaps → propose specific additions as a diff; apply only on approval |
-| `CLAUDE.md`, `GEMINI.md`, `.cursor/`, `.github/` | Human-owned unless created by the skill. Pointer files the skill created are managed |
-| `package.json` / manifests | Never edit silently. Propose script additions (e.g. `verify`) as an exact diff; apply on approval |
-| CI configs | Never modify existing CI. Offer the template as a new file only when no CI exists |
-| Lockfiles, `.env*`, secrets | Never touch. If secrets appear in tracked files, stop and warn |
+| Instructions and docs | Reuse existing locations. Patch missing guidance without duplicating sections or replacing project rules |
+| Harness settings and adapters | Preserve unrelated fields, comments, and instructions. See `references/harness-adapters.md` for structural merges |
+| Manifests | Show the exact proposed script change and its dependency/hook analysis; apply only when authorized |
+| CI configs | Preserve existing CI. New CI needs explicit authorization; a GitHub remote alone is not permission |
+| Lockfiles, `.env*`, secrets | Outside workflow initialization. Do not modify or copy credentials into generated guidance |
 
-## Idempotency contract
+## Repeated-run contract
 
 Re-running `init` must be boring:
 1. Detection runs fresh every time (never cache conclusions).
-2. Every file resolves to NO-OP, REFRESH (with diff), or PRESERVE.
-3. A fully-initialized repo reports "already AI-ready. 0 changes."
-4. No duplicated sections, no appended blocks, no timestamp churn in files that didn't change.
+2. Match guidance by its purpose and actual behavior, not exact headings or template wording.
+3. A coherent repo reports "already AI-ready. 0 changes." An incomplete setup receives only the missing, authorized additions.
+4. No duplicate sections, imports, or settings entries; no timestamp, formatting, or path churn in unchanged content.
 
 ## Reversibility
 
-- Everything generated is plain markdown/config tracked by git — `git diff` and `git checkout` are the undo mechanism.
-- Before the first write in a repo with uncommitted changes, report the dirty state and ask whether to proceed.
-- Never delete files during `init`. Deletions are always a human decision.
+- Generated guidance is ordinary Markdown/config. Review `git diff` and revert only this task's changes if necessary; broad checkout/reset commands can discard unrelated work.
+- Identify existing uncommitted work and preserve it. A dirty tree alone does not require confirmation. Ask if overlapping work creates a material ambiguity you cannot resolve safely.
+- Do not delete existing files during `init`.
 
 ## Asking vs acting
 
-Ask before: overwriting anything, editing manifests, creating CI, adding scripts, committing, deleting.
-Act without asking: reading files, running read-only detection commands, running the repo's existing verification commands, creating files the user already approved in the plan.
+Carry existing approvals forward. An initialization or repair request authorizes the relevant doc/config changes, not unrelated tooling, dependency, CI, or Git actions. Read and plan first; ask only for essential information, a material scope decision, or an action not yet authorized. `inspect` and ordinary `doctor` remain read-only.
