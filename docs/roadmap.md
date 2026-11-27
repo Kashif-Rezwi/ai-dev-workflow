@@ -21,3 +21,12 @@ Extend `doctor` with an evidence-based assessment shared by `init`: recognize eq
 Read [SKILL.md](../SKILL.md) and the spec's [handoff checkpoint](specs/existing-workflow-assessment.md#handoff-checkpoint), then verify the actual branch, commit, and working tree. Preserve existing staged and uncommitted work.
 
 **Next action:** review the proposed spec, then begin the shared assessment reference when implementation is authorized. Update task details and evidence in that spec; keep this roadmap as a short navigation and status summary.
+
+## After the assessment phase: learn from self-use
+
+**Status:** future exploration, after the existing-workflow assessment phase above.
+
+Continue using the installed skill to support development of its own source
+repository. Once the assessment phase is complete, revisit that experience together
+to brainstorm and evaluate opportunities for the skill to improve itself. The
+scope and approach for those improvements will be shaped by that discussion.
