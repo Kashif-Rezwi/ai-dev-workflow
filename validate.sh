@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Validate this single-skill repo against the Agent Skills standard.
+# Lightweight static checks for this single-skill repo.
 #
 # Layers (execution order):
 #   1. Structure: frontmatter opens on line 1 and is closed.
@@ -7,10 +7,10 @@
 #      invalid YAML; ' #' silently truncates the value. Quoted or block-scalar
 #      values are left to the real parser.
 #   3. Real YAML parsing when a runtime is available (python3+PyYAML, else ruby)
-#      — catches frontmatter that strict harness parsers reject (e.g. Cline
-#      silently skips a skill whose YAML does not parse).
-#   4. Reference integrity: every skill file referenced by path must exist, and
-#      references/checklists files must be reachable via progressive disclosure.
+#      plus required string fields and basic name/description constraints.
+#   4. Reference hints: recognized skill paths must exist; reference/checklist
+#      files must be mentioned by another Markdown file. This is not a graph
+#      reachability check, a behavior test, or proof of harness loading.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -51,6 +51,10 @@ if not isinstance(data, dict):
 value = data.get(sys.argv[2])
 if value is None:
     sys.exit(f"missing field: {sys.argv[2]}")
+if not isinstance(value, str):
+    sys.exit(f"field must be a string: {sys.argv[2]}")
+if sys.argv[2] == "name" and ("\n" in value or "\r" in value):
+    sys.exit("name must be a single line")
 print(value)
 PY
   elif [ "$YAML_ENGINE" = ruby ]; then
@@ -67,6 +71,8 @@ end
 abort "frontmatter is not a mapping" unless data.is_a?(Hash)
 value = data[ARGV[1]]
 abort "missing field: #{ARGV[1]}" if value.nil?
+abort "field must be a string: #{ARGV[1]}" unless value.is_a?(String)
+abort "name must be a single line" if ARGV[1] == "name" && (value.include?("\r") || value.include?("\n"))
 puts value
 ' "$file" "$key"
   else
@@ -84,7 +90,7 @@ check_plain_scalars() {
     case "$value" in
       \"*|\'*|\>*|\|*) ;;  # quoted or block-scalar: full parser handles it
       *": "*)
-        say_fail "'$key' is a plain YAML scalar containing ': ' — invalid YAML; wrap it in double quotes or use a block scalar (strict parsers like Cline reject the skill)"
+        say_fail "'$key' is a plain YAML scalar containing ': ' — invalid YAML; wrap it in double quotes or use a block scalar"
         ;;
       *" #"*)
         say_fail "'$key' is a plain YAML scalar containing ' #' — YAML treats it as a comment and truncates the value; wrap it in double quotes"
@@ -97,6 +103,7 @@ check_plain_scalars() {
 orphan_check() {
   local sub="$1" severity="$2"
   local f rel g found
+  [ -d "$DIR$sub" ] || return 0
   while IFS= read -r f; do
     rel="${f#$DIR/}"
     found=0
@@ -106,7 +113,7 @@ orphan_check() {
     done < <(find "$DIR" -name '*.md' -type f)
     if [ "$found" -eq 0 ]; then
       if [ "$severity" = fail ]; then
-        say_fail "unreferenced instruction file: $rel — unreachable via progressive disclosure; reference it from another skill file or delete it"
+        say_fail "unreferenced instruction file: $rel — reference it from another skill file or remove it if unused"
       else
         say_warn "unreferenced file: $rel — not referenced by path anywhere in the skill"
       fi
@@ -136,11 +143,11 @@ fm_name=""
 fm_desc=""
 if [ "$YAML_ENGINE" != none ]; then
   if ! fm_name="$(yaml_get "$file" name 2>&1)"; then
-    say_fail "frontmatter does not parse as YAML: $fm_name"
+    say_fail "invalid frontmatter: $fm_name"
     exit 1
   fi
   if ! fm_desc="$(yaml_get "$file" description 2>&1)"; then
-    say_fail "frontmatter does not parse as YAML: $fm_desc"
+    say_fail "invalid frontmatter: $fm_desc"
     exit 1
   fi
 else
@@ -149,35 +156,39 @@ else
   fm_desc="$(sed -n 's/^description:[[:space:]]*//p' "$file" | head -1)"
   if [ -z "$fm_name" ]; then say_fail "missing 'name' field"; exit 1; fi
   if [ -z "$fm_desc" ]; then say_fail "missing 'description' field"; exit 1; fi
+  case "$fm_name" in
+    '"'*) fm_name="${fm_name#\"}"; fm_name="${fm_name%\"}" ;;
+    \'*)  fm_name="${fm_name#\'}"; fm_name="${fm_name%\'}" ;;
+  esac
   case "$fm_desc" in
     '"'*) fm_desc="${fm_desc#\"}"; fm_desc="${fm_desc%\"}" ;;
     \'*)  fm_desc="${fm_desc#\'}"; fm_desc="${fm_desc%\'}" ;;
   esac
 fi
 
-# 4. name semantics: non-empty, lowercase-hyphenated, ≤64 characters.
-fm_name="$(printf '%s' "$fm_name" | tr -d '[:space:]')"
+# 4. Validate the parsed name as-is: never repair invalid whitespace.
 [ -n "$fm_name" ] || say_fail "missing 'name' field"
 printf '%s\n' "$fm_name" | grep -qE '^[a-z0-9]+(-[a-z0-9]+)*$' || say_fail "name must be lowercase alphanumeric with single hyphens"
 [ "${#fm_name}" -le 64 ] || say_fail "name exceeds 64 characters"
+[ "$fm_name" = "$name" ] || say_fail "name must match containing directory '$name'"
 
 # 5. description semantics: non-empty, ≤1024 characters.
 [ -n "$(printf '%s' "$fm_desc" | tr -d '[:space:]')" ] || say_fail "missing 'description' field"
-desc_len="$(printf '%s' "$fm_desc" | wc -c | tr -d '[:space:]')"
+desc_len="$(printf '%s' "$fm_desc" | wc -m | tr -d '[:space:]')"
 [ "$desc_len" -le 1024 ] || say_fail "description too long ($desc_len > 1024)"
 
-# 6. Every skill file referenced by path must exist.
+# 6. Recognized skill-path references must exist (not all Markdown links).
 while IFS= read -r ref; do
   [ -e "$DIR/$ref" ] || say_fail "referenced file missing: $ref"
 done < <(grep -rhoE '(references|templates|checklists|scripts|assets)/[A-Za-z0-9_./-]+\.(md|tmpl|yml|yaml|sh|py|json|txt)' --include='*.md' "$DIR" | sort -u)
 
-# 7. Instruction files must be reachable via progressive disclosure.
+# 7. Local mention check; cycles/disconnected groups are not detected.
 orphan_check /references fail
 orphan_check /checklists fail
 orphan_check /templates warn
 
 if [ "$fail" -eq 0 ]; then
-  echo "All skills valid."
+  echo "Static checks passed (YAML engine: $YAML_ENGINE); behavior and harness loading not evaluated."
 else
   echo "Validation failed." >&2
   exit 1

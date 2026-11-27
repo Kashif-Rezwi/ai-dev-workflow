@@ -2,7 +2,6 @@
 
 - **Status:** draft
 - **Created:** {{DATE}}
-- **Gear:** full
 
 ## Goal
 
@@ -14,10 +13,9 @@
 
 ## Acceptance criteria
 
-Testable statements. Implementation is not done until every criterion holds and verification is green.
+Observable outcomes with a check for each. Assess evidence against every criterion; passing automated checks alone do not prove the requirements are met.
 
-- [ ] {{CRITERION_1}}
-- [ ] {{CRITERION_2}}
+{{ACCEPTANCE_CRITERIA}}
 
 ## Constraints
 
@@ -25,21 +23,41 @@ Testable statements. Implementation is not done until every criterion holds and 
 
 ## Approaches considered
 
-| Criterion | Approach A: {{A_NAME}} | Approach B: {{B_NAME}} |
-|---|---|---|
-| {{CRITERION}} | | |
+{{MEANINGFUL_ALTERNATIVES}}
 
 **Decision:** {{CHOSEN_APPROACH}} — {{RATIONALE}}
 
 ## Plan
 
-| # | Task | Files | Verification |
-|---|---|---|---|
-| 1 | | | |
+{{ORDERED_TASKS_WITH_FILES_AND_CHECKS}}
+
+## Verification and review
+
+{{VERIFICATION_PLAN}}
+
+Record exact commands/results and manual review against acceptance criteria as work proceeds. Distinguish static adapter checks from actual instruction-loading confirmation. Include unperformed checks and keep unrelated failures separate.
 
 ## Risks & rollback
 
 {{RISKS}}
 
+## Handoff checkpoint
+
+Use only when unfinished work crosses sessions/tools; otherwise remove this section. Record the actual state at handoff, not a continuous activity log.
+
+```text
+Goal and acceptance criteria:
+Branch and base commit:
+Modified files and uncommitted work:
+Decisions already made:
+Checks run and results:
+Remaining work or blockers:
+Next concrete action:
+```
+
+Include relevant constraints and existing approvals. In the next session, read project instructions and verify the actual branch, commit, and working tree. Notes do not transfer uncommitted code; supply the actual changes to another checkout through a maintainer-controlled patch or authorized Git action.
+
 ---
-*Implementation follows the full gear in `docs/development.md`. This spec is the source of truth — if reality diverges, update the spec first.*
+{{WORKFLOW_REFERENCE}}
+
+Keep this spec current when findings change the approach. Compare alternatives only for meaningful decisions; already approved choices need no repeated approval. Git actions are separate from implementation completion.
